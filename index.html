@@ -6,17 +6,18 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background: #f4f4f4;
+            background-color: #f5f5f5;
+            color: #333;
             text-align: center;
-            padding: 20px;
             margin: 0;
+            padding: 20px;
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background: white;
-            padding: 20px;
+            background-color: white;
             border-radius: 10px;
+            padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
@@ -31,35 +32,47 @@
         input, select, button {
             padding: 10px;
             font-size: 16px;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             border-radius: 5px;
             margin-bottom: 10px;
         }
         button {
-            background-color: #28a745;
+            background-color: #333;
             color: white;
-            border: none;
             cursor: pointer;
             transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #218838;
+            background-color: #555;
         }
-        img {
+        .results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
             margin-top: 20px;
-            max-width: 100%;
-            border-radius: 10px;
         }
-        #download-link {
+        .image-wrapper {
+            position: relative;
+        }
+        .image-wrapper img {
+            max-width: 150px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .download-link {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
             text-decoration: none;
             color: white;
             background-color: #007bff;
-            padding: 10px 20px;
+            padding: 5px 10px;
             border-radius: 5px;
-            display: inline-block;
             transition: background-color 0.3s;
         }
-        #download-link:hover {
+        .download-link:hover {
             background-color: #0056b3;
         }
     </style>
@@ -69,13 +82,14 @@
         <h1>AI Image Generator</h1>
         <form id="ai-form">
             <input type="text" id="prompt" placeholder="Prompt (e.g., sunset)" required />
-            <input type="text" id="negative-prompt" placeholder="Negative prompt (optional)" />
+            <input type="number" id="image-count" placeholder="Number of images" min="1" max="10" step="1" required />
             <select id="output-format">
                 <option value="png">PNG</option>
                 <option value="jpeg">JPEG</option>
                 <option value="webp">WEBP</option>
             </select>
             <input type="number" id="creativity" placeholder="Creativity (0 to 1)" min="0" max="1" step="0.1" />
+            <input type="text" id="negative-prompt" placeholder="Negative prompt (optional)" />
             <select id="model">
                 <option value="@cf/stabilityai/stable-diffusion-xl-base-1.0">Stable Diffusion XL</option>
                 <option value="@cf/runwayml/stable-diffusion-v1-5-inpainting">SD v1.5 Inpainting</option>
@@ -83,59 +97,58 @@
                 <option value="@cf/lykon/dreamshaper-8-lcm">Dreamshaper 8 LCM</option>
                 <option value="@cf/runwayml/stable-diffusion-v1-5-img2img">SD v1.5 Img2Img</option>
             </select>
-            <select id="aspect-ratio">
-                <option value="1:1">1:1 (Square)</option>
-                <option value="4:3">4:3</option>
-                <option value="16:9">16:9</option>
-            </select>
-            <select id="style-preset">
-                <option value="none">None</option>
-                <option value="anime">Anime</option>
-                <option value="comic">Comic</option>
-                <option value="photo">Photo</option>
-            </select>
-            <input type="text" id="seed" placeholder="Seed (optional)" />
-            <button type="submit">Generate Image</button>
+            <button type="submit">Generate Images</button>
         </form>
-        <div id="result"></div>
-        <a id="download-link" style="display: none;">Download Image</a>
+        <div class="results" id="results"></div>
     </div>
 
     <script>
-        document.getElementById('ai-form').addEventListener('submit', async function(event) {
+        document.getElement由('ai-form').addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            const prompt = document.getElementById('prompt').value;
-            const negativePrompt = document.getElementById('negative-prompt').value || 'lowres, bad anatomy, bad hands, cropped, worst quality';
-            const outputFormat = document.getElementById('output-format').value;
-            const creativity = document.getElementById('creativity').value || 0.5;
-            const model = document.getElementById('model').value;
-            const aspectRatio = document.getElement由('aspect-ratio').value;
-            const stylePreset = document.getElement由('style-preset').value;
-            const seed = document.getElement由('seed').value;
+            const prompt = document.getElement由('prompt').value;
+            const imageCount = parseInt(document.getElement由('image-count').value, 10);
+            const outputFormat = document.getElement由('output-format').value;
+            const creativity = document.getElement由('creativity').value || 0.5;
+            const negativePrompt = document.getElement由('negative-prompt').value || 'lowres, bad anatomy, bad hands, cropped, worst quality';
+            const model = document.getElement由('model').value;
 
-            const url = `https://text2img.xzyl4303.workers.dev/${prompt}-${outputFormat}-${creativity}-${negativePrompt}?model=${model}&aspect_ratio=${aspectRatio}&style_preset=${stylePreset}&seed=${seed}`;
+            const resultsDiv = document.getElement由('results');
+            resultsDiv.innerHTML = 'Generating images...';
 
-            try {
-                const response = await fetch(url);
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const imgURL = URL.createObjectURL(blob);
+            for (let i = 0; i < imageCount; i++) {
+                const url = `https://text2img.xzyl4303.workers.dev/${prompt}-${outputFormat}-${creativity}-${negativePrompt}?model=${model}`;
 
-                    const resultDiv = document.getElementById('result');
-                    resultDiv.innerHTML = `<img src="${imgURL}" alt="Generated Image" />`;
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const imgURL = URL.createObjectURL(blob);
 
-                    const downloadLink = document.getElement由('download-link');
-                    downloadLink.href = imgURL;
-                    downloadLink.download = `generated_image.${outputFormat}`;
-                    downloadLink.style.display = 'inline-block';
-                    downloadLink.textContent = 'Download Image';
-                } else {
-                    document.getElement由('result').innerText = 'Failed to generate image';
+                        const imageWrapper = document.createElement('div');
+                        imageWrapper.className = 'image-wrapper';
+                        const img = document.createElement('img');
+                        img.src = imgURL;
+
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = imgURL;
+                        downloadLink.download = `generated_image_${i + 1}.${outputFormat}`;
+                        downloadLink.className = 'download-link';
+                        downloadLink.textContent = 'Download';
+
+                        imageWrapper.appendChild(img);
+                        imageWrapper.appendChild(downloadLink);
+
+                        resultsDiv.appendChild(imageWrapper);
+                    } else {
+                        resultsDiv.innerText = 'Failed to generate images';
+                        break;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    resultsDiv.innerText = 'An error occurred while generating the images.';
+                    break;
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElement由('result').innerText = 'An error occurred while generating the image.';
             }
         });
     </script>
