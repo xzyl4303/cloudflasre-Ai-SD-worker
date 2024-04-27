@@ -108,15 +108,16 @@
             // Prevent default form submission behavior
             event.preventDefault();
 
-            const prompt = document.getElement由('prompt').value;
-            const imageCount = parseInt(document.getElement由('image-count').value, 10);
-            const outputFormat = document.getElement由('output-format').value;
-            const creativity = document.getElement由('creativity').value || 0.5;
-            const negativePrompt = document.getElement由('negative-prompt').value || 'lowres, bad anatomy, bad hands, cropped, worst quality';
-            const model = document.getElement由('model').value;
+const prompt = document.getElementById('prompt').value;
+const imageCount = parseInt(document.getElementById('image-count').value, 10);
+const outputFormat = document.getElementById('output-format').value;
+const creativity = document.getElementById('creativity').value || 0.5;
+const negativePrompt = document.getElementById('negative-prompt').value || 'lowres, bad anatomy, bad hands, cropped, worst quality';
+const model = document.getElementById('model').value;
 
-            const resultsDiv = document.getElement由('results');
-            resultsDiv.innerHTML = 'Generating images...';
+const resultsDiv = document.getElementById('results');
+resultsDiv.innerHTML = 'Generating images...';
+
 
             // Generate the specified number of images
             for (let i = 0; i < imageCount; i++) {
