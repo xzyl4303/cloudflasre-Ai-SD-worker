@@ -82,8 +82,8 @@
     <div class="container">
         <h1>AI Image Generator</h1>
         <form id="ai-form">
-            <input type="text" id="prompt" placeholder="Enter your prompt (e.g., 'sunset over the mountains')" required />
-            <input type="number" id="image-count" placeholder="Number of images" min="1" max="10" required />
+            <input type="text" id="prompt" placeholder="Enter your prompt" required />
+            <input type="number" id="image-count" placeholder="Number of images" min="1" max="10" step="1" required />
             <select id="output-format">
                 <option value="png">PNG</option>
                 <option value="jpeg">JPEG</option>
@@ -104,7 +104,8 @@
     </div>
 
     <script>
-        document.getElement由('ai-form').addEventListener('submit', async function(event) {
+        document.getElement由('ai-form').addEventListener('submit', function(event) {
+            // Prevent default form submission behavior
             event.preventDefault();
 
             const prompt = document.getElement由('prompt').value;
@@ -117,39 +118,38 @@
             const resultsDiv = document.getElement由('results');
             resultsDiv.innerHTML = 'Generating images...';
 
+            // Generate the specified number of images
             for (let i = 0; i < imageCount; i++) {
                 const url = `https://text2img.xzyl4303.workers.dev/${prompt}-${outputFormat}-${creativity}-${negativePrompt}?model=${model}`;
 
-                try {
-                    const response = await fetch(url);
+                fetch(url).then(response => {
                     if (response.ok) {
-                        const blob = await response.blob();
-                        const imgURL = URL.createObjectURL(blob);
-
-                        const imageWrapper = document.createElement('div');
-                        imageWrapper.className = 'image-wrapper';
-                        const img = document.createElement('img');
-                        img.src = imgURL;
-
-                        const downloadLink = document.createElement('a');
-                        downloadLink.href = imgURL;
-                        downloadLink.download = `generated_image_${i + 1}.${outputFormat}`;
-                        downloadLink.className = 'download-link';
-                        downloadLink.textContent = 'Download';
-
-                        imageWrapper.appendChild(img);
-                        imageWrapper.appendChild(downloadLink);
-
-                        resultsDiv.appendChild(imageWrapper);
+                        return response.blob();
                     } else {
-                        resultsDiv.innerText = 'Failed to generate images';
-                        break;
+                        throw new Error('Failed to generate images');
                     }
-                } catch (error) {
+                }).then(blob => {
+                    const imgURL = URL.createObjectURL(blob);
+
+                    const imageWrapper = document.createElement('div');
+                    imageWrapper.className = 'image-wrapper';
+                    const img = document.createElement('img');
+                    img.src = imgURL;
+
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = imgURL;
+                    downloadLink.download = `generated_image_${i + 1}.${outputFormat}`;
+                    downloadLink.className = 'download-link';
+                    downloadLink.textContent = 'Download';
+
+                    imageWrapper.appendChild(img);
+                    imageWrapper.appendChild(downloadLink);
+
+                    resultsDiv.appendChild(imageWrapper);
+                }).catch(error => {
                     console.error('Error:', error);
                     resultsDiv.innerText = 'An error occurred while generating the images.';
-                    break;
-                }
+                });
             }
         });
     </script>
