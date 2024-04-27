@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Image Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        input {
+            padding: 8px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        img {
+            margin-top: 20px;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Image Generator</h1>
+    <form id="ai-form">
+        <input type="text" id="prompt" placeholder="Prompt (e.g., sunset)" required />
+        <select id="output-format">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WEBP</option>
+        </select>
+        <input type="number" id="creativity" placeholder="Creativity (0 to 1)" min="0" max="1" step="0.1" />
+        <input type="text" id="negative-prompt" placeholder="Negative prompt (optional)" />
+        <button type="submit">Generate Image</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('ai-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const prompt = document.getElementById('prompt').value;
+            const outputFormat = document.getElementById('output-format').value;
+            const creativity = document.getElementById('creativity').value || 0.5;
+            const negativePrompt = document.getElementById('negative-prompt').value || 'lowres, bad anatomy, bad hands, cropped, worst quality';
+
+            const url = `https://text2img.xzyl4303.workers.dev/${prompt}-${outputFormat}-${creativity}-${negativePrompt}`;
+
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imgURL = URL.createObjectURL(blob);
+                    document.getElementById('result').innerHTML = `<img src="${imgURL}" />`;
+                } else {
+                    document.getElementById('result').innerText = 'Failed to generate image';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerText = 'An error occurred while generating the image.';
+            }
+        });
+    </script>
+</body>
+</html>
