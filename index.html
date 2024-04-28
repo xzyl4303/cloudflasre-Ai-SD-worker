@@ -59,6 +59,11 @@
             max-width: 150px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .image-wrapper img:hover {
+            transform: scale(1.1); /* 悬停时微缩放效果 */
         }
         .download-link {
             position: absolute;
@@ -73,7 +78,40 @@
             transition: background-color 0.3s;
         }
         .download-link:hover {
-            background-color: #0056b3;
+           背景色改变为 #0056b3；
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* 半透明黑色背景 */
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .modal img {
+            max-width: 80%;
+            max-height: 80%;
+            border-radius: 10px;
+        }
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: white;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .close-modal:hover {
+            background-color: #ddd;
         }
     </style>
 </head>
@@ -102,56 +140,73 @@
         <div class="results" id="results"></div>
     </div>
 
+    <!-- Modal for image enlargement -->
+    <div id="image-modal" class="modal">
+        <img id="modal-img" src="" alt="Enlarged image" />
+        <button id="close-modal" class="close-modal">Close</button>
+    </div>
+
     <script>
-document.getElementById('ai-form').addEventListener('submit', async function(event) {
-    event.preventDefault(); // 阻止表单的默认提交行为
+        document.getElementById('ai-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
 
-    const prompt = document.getElementById('prompt').value; // 获取用户输入的提示
-    const imageCount = parseInt(document.getElementById('image-count').value, 10); // 获取图像数量并转换为整数
-    const outputFormat = document.getElementById('output-format').value; // 获取输出格式
-    const creativity = document.getElementById('creativity').value || 0.5; // 获取创意度
-    const negativePrompt = document.getElementById('negative-prompt').value || 'lowres, bad anatomy, bad hands, cropped, worst quality'; // 获取负面提示
-    const model = document.getElementById('model').value; // 获取模型
+            const prompt = document.getElementById('prompt').value;
+            const imageCount = parseInt(document.getElementById('image-count').value, 10);
+            const outputFormat = document.getElementById('output-format').value;
+            const creativity = document.getElementById('creativity').value || 0.5;
+            const negativePrompt = document.getElementById('negative-prompt').value || 'lowres, bad anatomy, bad hands, cropped, worst quality';
+            const model = document.getElementById('model').value;
 
-    const resultsDiv = document.getElementById('results'); // 获取用于显示结果的容器
-    resultsDiv.innerHTML = 'Generating images...'; // 通知用户正在生成图像
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = 'Generating images...';
 
-    for (let i = 0; i < imageCount; i++) { // 生成多张图像
-        const url = `https://text2img.xzyl4303.workers.dev/${prompt}-${outputFormat}-${creativity}-${negativePrompt}?model=${model}`; // 构建请求URL
+            for (let i = 0; i < imageCount; i++) {
+                const url = `https://text2img.xzyl4303.workers.dev/${prompt}-${outputFormat}-${creativity}-${negativePrompt}?model=${model}`;
 
-        try {
-            const response = await fetch(url); // 发起请求
-            if (response.ok) { // 如果请求成功
-                const blob = await response.blob(); // 将响应转换为Blob
-                const imgURL = URL.createObjectURL(blob); // 创建图像URL
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const imgURL = URL.createObjectURL(blob);
 
-                const imageWrapper = document.createElement('div'); // 创建图像容器
-                imageWrapper.className = 'image-wrapper'; // 设置类名
-                const img = document.createElement('img'); // 创建图像元素
-                img.src = imgURL; // 设置图像来源
+                        const imageWrapper = document.createElement('div');
+                        imageWrapper.className = 'image-wrapper';
+                        const img = document.createElement('img');
+                        img.src = imgURL;
 
-                const downloadLink = document.createElement('a'); // 创建下载链接
-                downloadLink.href = imgURL; // 设置链接来源
-                downloadLink.download = `generated_image_${i + 1}.${outputFormat}`; // 设置下载文件名
-                downloadLink.className = 'download-link'; // 设置类名
-                downloadLink.textContent = 'Download'; // 设置链接文本
+                        img.addEventListener('click', function() {
+                            const modal = document.getElementById('image-modal');
+                            const modalImg = document.getElementById('modal-img');
+                            modalImg.src = img.src;
+                            modal.style.display = 'flex';
+                        });
 
-                imageWrapper.appendChild(img); // 将图像添加到容器中
-                imageWrapper.appendChild(downloadLink); // 将下载链接添加到容器中
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = imgURL;
+                        downloadLink.download = `generated_image_${i + 1}.${outputFormat}`;
+                        downloadLink.className = 'download-link';
+                        downloadLink.textContent = 'Download';
 
-                resultsDiv.appendChild(imageWrapper); // 将容器添加到结果区域
-            } else {
-                resultsDiv.innerText = 'Failed to generate images'; // 如果请求失败
-                break;
+                        imageWrapper.appendChild(img);
+                        imageWrapper.appendChild(downloadLink);
+
+                        resultsDiv.appendChild(imageWrapper);
+                    } else {
+                        resultsDiv.innerText = 'Failed to generate images';
+                        break;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    resultsDiv.innerText = 'An error occurred while generating the images.';
+                    break;
+                }
             }
-        } catch (error) {
-            console.error('Error:', error); // 记录错误
-            resultsDiv.innerText = 'An error occurred while generating the images.'; // 通知用户发生错误
-            break;
-        }
-    }
-});
+        });
 
+        document.getElementById('close-modal').addEventListener('click', function() {
+            const modal = document.getElementById('image-modal');
+            modal.style.display = 'none';
+        });
     </script>
 </body>
 </html>
