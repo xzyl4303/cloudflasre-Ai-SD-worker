@@ -78,9 +78,9 @@
             transition: background-color 0.3s;
         }
         .download-link:hover {
-           背景色改变为 #0056b3；
+            background-color: #0056b3; /* 悬停时的颜色改变 */
         }
-        /* Modal styles */
+        /* 模态框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -111,7 +111,7 @@
             transition: background-color 0.3s;
         }
         .close-modal:hover {
-            background-color: #ddd;
+            background-color: #ddd; /* 悬停时的颜色改变 */
         }
     </style>
 </head>
@@ -140,7 +140,7 @@
         <div class="results" id="results"></div>
     </div>
 
-    <!-- Modal for image enlargement -->
+    <!-- 模态框 -->
     <div id="image-modal" class="modal">
         <img id="modal-img" src="" alt="Enlarged image" />
         <button id="close-modal" class="close-modal">Close</button>
